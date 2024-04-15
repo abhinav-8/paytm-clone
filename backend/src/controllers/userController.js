@@ -3,6 +3,7 @@ const { z } = require("zod");
 const { hashPassword, verifyPassword } = require("../../utils/authUtil");
 const jwt = require("jsonwebtoken");
 const { JWT_KEY } = require("../config/serverConfig");
+const { fromZodError } = require('zod-validation-error');
 
 const signup = async (req, res) => {
   try {
@@ -122,13 +123,12 @@ const signin = async (req, res) => {
         success: true,
         message: "Successfully created user",
       });
-    }
-    else {
+    } else {
       return res.status(401).json({
-        data:{},
-        msg:"Invalid credentials!",
-        success:false
-      })
+        data: {},
+        msg: "Invalid credentials!",
+        success: false,
+      });
     }
   } catch (error) {
     return res.status(500).json({
@@ -139,7 +139,52 @@ const signin = async (req, res) => {
   }
 };
 
+const update = async (req, res) => {
+  try {
+    const updateSchema = z.object({
+      firstName: z.string().trim().max(50),
+      lastName: z.string().trim().max(50),
+      password: z.string().trim().min(6),
+    })
+    .partial()
+    .refine(
+      data => !!(data.firstName || data.lastName || data.password),
+      "Update something"
+    );
+
+    const result = updateSchema.safeParse(req.body);
+
+    if(!result.success){
+      return res.status(400).json({
+        data: {},
+        msg: fromZodError(result.error).toString(),
+        success: false,
+      });
+    }
+
+    //If in return we don't need the modified data in return,we can go with the UpdateOne method too
+    const response =  await User.findOneAndUpdate({_id:req.body.userId},req.body);
+    
+    return res.status(200).json({
+      data:{
+        userName: response.userName,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        _id:response._id,
+      },
+      msg:"Successfully updated user data",
+      success:true
+    })
+  } catch (error) {
+    return res.status(500).json({
+      data: {},
+      msg: "Some error occurred",
+      success: false,
+    });
+  }
+};
 module.exports = {
   signup,
-  signin
+  signin,
+  update
 };
