@@ -22,6 +22,8 @@ const UserSchema = new mongoose.Schema({
         maxLength:50,
         lowercase:true,
     },
+    //In password validator can be added for the reggex thing but for now 
+    // keeping it simple
     password : {
         type:String,
         required:true,
@@ -31,6 +33,4 @@ const UserSchema = new mongoose.Schema({
 })
 
 const User = mongoose.model("User",UserSchema);
-module.exports = {
-    User
-};
+module.exports = User;

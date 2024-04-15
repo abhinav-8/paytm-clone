@@ -1,8 +1,7 @@
-const mongoose = reuqire("mongoose");
-const {MONGO_URI} = require("./serverConfig")
+const mongoose = require("mongoose");
 
 const connect  = async ()=> {
-    await mongoose.connect(`${MONGO_URI}`);
+    await mongoose.connect(`${process.env.MONGO_URI}`);
 }
 
 module.exports = connect;
