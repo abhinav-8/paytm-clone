@@ -15,7 +15,6 @@ const isAuthenticated = (req, res, next) => {
   let token = headerToken.split(" ")[1];
   try {
     const decoded = jwt.verify(token, JWT_KEY);
-    console.log("decoded",decoded)
     req.body.userId = decoded.userId;
     next();
   } catch (error) {

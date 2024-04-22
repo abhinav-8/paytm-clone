@@ -3,7 +3,7 @@ const { z } = require("zod");
 const { hashPassword, verifyPassword } = require("../../utils/authUtil");
 const jwt = require("jsonwebtoken");
 const { JWT_KEY } = require("../config/serverConfig");
-const { fromZodError } = require('zod-validation-error');
+const { fromZodError } = require("zod-validation-error");
 
 const signup = async (req, res) => {
   try {
@@ -141,20 +141,21 @@ const signin = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const updateSchema = z.object({
-      firstName: z.string().trim().max(50),
-      lastName: z.string().trim().max(50),
-      password: z.string().trim().min(6),
-    })
-    .partial()
-    .refine(
-      data => !!(data.firstName || data.lastName || data.password),
-      "Update something"
-    );
+    const updateSchema = z
+      .object({
+        firstName: z.string().trim().max(50),
+        lastName: z.string().trim().max(50),
+        password: z.string().trim().min(6),
+      })
+      .partial()
+      .refine(
+        (data) => !!(data.firstName || data.lastName || data.password),
+        "Update something"
+      );
 
     const result = updateSchema.safeParse(req.body);
 
-    if(!result.success){
+    if (!result.success) {
       return res.status(400).json({
         data: {},
         msg: fromZodError(result.error).toString(),
@@ -163,18 +164,21 @@ const update = async (req, res) => {
     }
 
     //If in return we don't need the modified data in return,we can go with the UpdateOne method too
-    const response =  await User.findOneAndUpdate({_id:req.body.userId},req.body);
-    
+    const response = await User.findOneAndUpdate(
+      { _id: req.body.userId },
+      req.body
+    );
+
     return res.status(200).json({
-      data:{
+      data: {
         userName: response.userName,
         firstName: response.firstName,
         lastName: response.lastName,
-        _id:response._id,
+        _id: response._id,
       },
-      msg:"Successfully updated user data",
-      success:true
-    })
+      msg: "Successfully updated user data",
+      success: true,
+    });
   } catch (error) {
     return res.status(500).json({
       data: {},
@@ -183,8 +187,47 @@ const update = async (req, res) => {
     });
   }
 };
+
+const search = async (req, res) => {
+  try {
+    const filter = req.query.filter || "";
+
+    const data = await User.find({
+      $or: [
+        {
+          firstName: {
+            $regex: filter,
+          },
+        },
+        {
+          lastName: {
+            $regex: filter,
+          },
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      data: data.map((u) => ({
+        username: u.userName,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        _id: u._id,
+      })),
+      msg: "successfully fetched users",
+      success: true,
+    });
+  } catch (error) {
+    res.status(500).json({
+      msg: "There is some internal error!",
+      success: false,
+    });
+  }
+};
+
 module.exports = {
   signup,
   signin,
-  update
+  update,
+  search,
 };
