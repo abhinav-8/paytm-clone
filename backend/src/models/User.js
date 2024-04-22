@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema({
         required:true,
         trim:true,
         minLength:6,
-    }
+    },
 })
 
 const User = mongoose.model("User",UserSchema);

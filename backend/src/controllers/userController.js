@@ -1,4 +1,4 @@
-const { User } = require("../models/index");
+const { User , Account } = require("../models/index");
 const { z } = require("zod");
 const { hashPassword, verifyPassword } = require("../../utils/authUtil");
 const jwt = require("jsonwebtoken");
@@ -44,6 +44,12 @@ const signup = async (req, res) => {
     });
 
     const userId = response._id;
+
+    //create account
+    await Account.create({
+      userId: userId,
+      balance: 1 + Math.random().toPrecision(4)*10000
+    })
 
     const token = jwt.sign(
       {
