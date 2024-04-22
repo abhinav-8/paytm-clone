@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const { User, Account } = require("../models/index");
 const { z } = require("zod");
+
 const getBalance = async (req, res) => {
   try {
     const data = await Account.findOne({
@@ -8,7 +9,7 @@ const getBalance = async (req, res) => {
     });
     return res.status(200).json({
       data: {
-        balance: data.balance,
+        balance: data.balance/10000,
       },
       msg: "Successfully fetched balance",
       success: true,
@@ -110,7 +111,6 @@ const transferMoney = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   getBalance,
